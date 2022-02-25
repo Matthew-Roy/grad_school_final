@@ -1,0 +1,77 @@
+IV <- c("med_income", "blck_share")
+DV <- c("ev_per_k", "avg_dist")
+
+scatter_seattle <- function(x, y, x_lab, y_lab, cap) {
+  plot_seattle %>%
+    filter_at(vars(y), any_vars(!is.na(.))) %>%
+    ggplot(
+      aes_string(x, y)
+    ) +
+    geom_point(
+      alpha = 0.5,
+      color = "seagreen4",
+      size = 2
+    ) +
+    geom_smooth(
+      method = "lm",
+      se = FALSE,
+      linetype = "dotted",
+      color = "dodgerblue3"
+    ) +
+    stat_poly_eq(
+      formula = y ~ x,
+      aes(label = ..rr.label..),
+      parse = TRUE
+    ) +
+    theme(
+      panel.background = element_blank(),
+      axis.line = element_line(
+        colour = "black"
+      )
+    ) +
+    labs(
+      title = str_c(y_lab, "vs", x_lab, sep = " "),
+      subtitle = "City of Seattle, WA",
+      x = x_lab,
+      y = y_lab,
+      caption = str_c("Data Sources: U.S Census Bureau, ",
+                      cap, sep = "")
+    )
+}
+# Regression coef label source: https://stackoverflow.com/questions/7549694/add-regression-line-equation-and-r2-on-graph
+
+for (i in 1:2) {
+  x <- 1
+  while (x < 3) {
+    if (i == 1) {
+      a <- "Median Income"
+      z <- scale_x_continuous(
+        labels = label_dollar(
+          accuracy = 1
+        )
+      )
+    }
+    else {
+      a <- "Black Population Share"
+      z <- scale_x_continuous(
+        labels = label_percent(
+          accuracy = 1
+        )
+      )
+    }
+
+    if (x == 1) {
+      b <- "EVs/1000"
+      c <- "State of Washington"
+    }
+    else {
+      b <- "Nearest Charger Distance (Avg. m)"
+      c <- "U.S. Dept. of Energy"
+    }
+
+    plot <- scatter_seattle(IV[i], DV[x], a, b, c) +
+      z
+    print(plot)
+    x <- x + 1
+  }
+}
